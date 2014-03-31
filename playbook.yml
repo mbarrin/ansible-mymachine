@@ -1,0 +1,49 @@
+# vi: set ft=ansible :
+- hosts: all
+  vars:
+    user: 'moju'
+  tasks:
+  - name: Install software
+    sudo: true
+    apt: pkg={{item}}
+         update_cache=yes
+         cache_valid_time=3600
+    with_items:
+      - vim-nox
+      - git
+      - tmux
+      - 'rxvt-unicode-256color'
+      - zsh
+
+  - name: Clone Vundle
+    git: repo=https://github.com/gmarik/Vundle
+         dest=/home/{{user}}/.vim/bundle/vundle
+
+  - name: Clone omz
+    git: repo=https://github.com/mbarrin/oh-my-zsh
+         dest=/home/{{user}}/src/mbarrin/oh-my-zsh
+
+  - name: Clone dotfiles
+    git: repo=https://github.com/mbarrin/dotfiles
+         dest=/home/{{user}}/src/mbarrin/dotfiles
+
+  - name: Change shell
+    sudo: true
+    user: name={{user}}
+          shell=/bin/zsh
+
+  - name: symlink omz
+    file: state=link
+          src=/home/{{user}}/src/mbarrin/oh-my-zsh
+          dest=/home/{{user}}/.oh-my-zsh
+
+  - name: symlink dotfiles
+    file: state=link
+          src=/home/{{user}}/src/mbarrin/dotfiles/{{item}}
+          dest=/home/{{user}}/.{{item}}
+    with_items:
+      - zshrc
+      - vimrc
+      - tmux.conf
+      - Xresources
+
